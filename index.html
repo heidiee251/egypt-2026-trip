@@ -2,8 +2,19 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Viewport 設定優化：加入 viewport-fit=cover 以適應全螢幕 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>2026 一生必去埃及行</title>
+    
+    <!-- PWA / 加入主畫面設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    
+    <!-- Icon 設定：您可以將 href 換成任何您喜歡的圖片網址 (建議使用正方形 PNG) -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2060/2060284.png">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2060/2060284.png">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -28,30 +39,33 @@
         }
     </script>
     <style>
-        /* Hide scrollbar for Chrome, Safari and Opera */
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
+        /* Hide scrollbar */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 手機版優化：防止橡皮筋效果與選取 */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
         }
-        /* Hide scrollbar for IE, Edge and Firefox */
-        .scrollbar-hide {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
+
+        /* 安全區域設定：確保不被瀏海或 Home Bar 擋住 */
+        .safe-top { padding-top: env(safe-area-inset-top); }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
-<body class="bg-gray-100 transition-colors duration-300 overflow-x-hidden">
+<!-- Body 改為 fixed inset-0 以鎖定視窗，防止整體滑動 -->
+<body class="bg-gray-100 transition-colors duration-300 fixed inset-0 overflow-hidden w-full h-full">
 
     <!-- 
-      修正重點：
-      1. w-full: 手機版強制佔滿寬度
-      2. shadow-none sm:shadow-2xl: 手機版移除陰影(避免超出邊框)，電腦版保留陰影
-      3. sm:rounded-2xl: 電腦版才有圓角，手機版直角貼邊
-      4. sm:my-8: 電腦版上下留白，手機版貼齊
+      佈局修正：
+      1. 手機版使用 h-full w-full flex flex-col 佔滿 fixed 的 body，解決溢出問題
+      2. 電腦版維持 sm:h-[calc(100vh-64px)] 懸浮視窗感
     -->
-    <div id="app-container" class="w-full min-h-screen sm:h-[calc(100vh-64px)] font-sans text-gray-800 max-w-md mx-auto relative shadow-none sm:shadow-2xl sm:rounded-2xl overflow-hidden bg-gray-100 transition-colors duration-300 sm:my-8 border-x-0 sm:border-x border-gray-200/50">
+    <div id="app-container" class="w-full h-full flex flex-col sm:h-[calc(100vh-64px)] sm:max-h-[900px] font-sans text-gray-800 max-w-md mx-auto relative shadow-none sm:shadow-2xl sm:rounded-2xl bg-gray-100 transition-colors duration-300 sm:my-8 border-x-0 sm:border-x border-gray-200/50">
         
-        <!-- Header -->
-        <header id="header" class="bg-white px-6 pt-12 pb-4 sticky top-0 z-20 shadow-sm flex justify-between items-end transition-colors duration-300">
+        <!-- Header: 增加 safe-top 避開瀏海 -->
+        <header id="header" class="safe-top bg-white px-6 pt-12 pb-4 z-20 shadow-sm flex-none flex justify-between items-end transition-colors duration-300">
             <div>
                 <h1 class="text-xl font-extrabold text-amber-600 tracking-tight leading-tight">2026<br/><span class="text-gray-800 text-2xl" id="header-subtitle">一生必去埃及行</span></h1>
                 <p class="text-xs text-gray-400 font-medium tracking-widest mt-1">MYSTERY & HISTORY TOUR</p>
@@ -61,13 +75,13 @@
             </button>
         </header>
 
-        <!-- Main Content -->
-        <main id="main-content" class="p-4 pb-24 overflow-y-auto h-[calc(100vh-140px)] sm:h-[calc(100%-140px)] scrollbar-hide">
+        <!-- Main Content: flex-1 讓它自動填滿剩餘空間並負責捲動 -->
+        <main id="main-content" class="flex-1 p-4 pb-6 overflow-y-auto scrollbar-hide overscroll-contain">
             <!-- Content will be injected here by JavaScript -->
         </main>
 
-        <!-- Bottom Navigation -->
-        <nav id="bottom-nav" class="absolute bottom-0 w-full bg-white border-t border-gray-200 px-4 py-3 flex justify-between items-center text-xs z-20 transition-colors duration-300">
+        <!-- Bottom Navigation: 增加 safe-bottom 避開 Home Indicator -->
+        <nav id="bottom-nav" class="safe-bottom bg-white border-t border-gray-200 px-4 py-3 z-20 flex-none flex justify-between items-center text-xs transition-colors duration-300">
             <!-- Nav items injected by JS -->
         </nav>
 
