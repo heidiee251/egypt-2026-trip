@@ -8,10 +8,11 @@
     
     <!-- PWA / 加入主畫面設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- 改為 default 可以讓狀態列背景自動適應，避免過度透明造成的重疊感，或者維持 black-translucent 配合下方 CSS修正 -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
     
-    <!-- Icon 設定：您可以將 href 換成任何您喜歡的圖片網址 (建議使用正方形 PNG) -->
+    <!-- Icon 設定 -->
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2060/2060284.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2060/2060284.png">
 
@@ -49,23 +50,33 @@
             -webkit-touch-callout: none;
         }
 
-        /* 安全區域設定：確保不被瀏海或 Home Bar 擋住 */
-        .safe-top { padding-top: env(safe-area-inset-top); }
+        /* 關鍵修正：Header 頂部間距控制 
+           使用 calc() 確保同時擁有「安全區域」與「視覺留白」
+        */
+        .header-safe-padding {
+            /* 預設 fallback (若瀏覽器不支援 env) */
+            padding-top: 1.5rem; 
+            /* PWA 模式：瀏海高度 + 1.5rem (約24px) 的額外留白 */
+            padding-top: calc(env(safe-area-inset-top) + 1.5rem); 
+        }
+
+        /* 電腦版 (sm breakpoint) 覆蓋上述設定，給予更多留白 */
+        @media (min-width: 640px) {
+            .header-safe-padding {
+                padding-top: 3rem; /* 對應原本的 sm:pt-12 */
+            }
+        }
+
         .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
 <!-- Body 改為 fixed inset-0 以鎖定視窗，防止整體滑動 -->
 <body class="bg-gray-100 transition-colors duration-300 fixed inset-0 overflow-hidden w-full h-full">
 
-    <!-- 
-      佈局修正：
-      1. 手機版使用 h-full w-full flex flex-col 佔滿 fixed 的 body，解決溢出問題
-      2. 電腦版維持 sm:h-[calc(100vh-64px)] 懸浮視窗感
-    -->
     <div id="app-container" class="w-full h-full flex flex-col sm:h-[calc(100vh-64px)] sm:max-h-[900px] font-sans text-gray-800 max-w-md mx-auto relative shadow-none sm:shadow-2xl sm:rounded-2xl bg-gray-100 transition-colors duration-300 sm:my-8 border-x-0 sm:border-x border-gray-200/50">
         
-        <!-- Header: 修改 pt-12 為 pt-4 sm:pt-12，減少手機版上方空白 -->
-        <header id="header" class="safe-top bg-white px-6 pt-4 sm:pt-12 pb-4 z-20 shadow-sm flex-none flex justify-between items-end transition-colors duration-300">
+        <!-- Header: 移除 tailwind 的 pt-4/sm:pt-12，改用自定義的 header-safe-padding -->
+        <header id="header" class="header-safe-padding bg-white px-6 pb-4 z-20 shadow-sm flex-none flex justify-between items-end transition-colors duration-300">
             <div>
                 <h1 class="text-xl font-extrabold text-amber-600 tracking-tight leading-tight">2026<br/><span class="text-gray-800 text-2xl" id="header-subtitle">一生必去埃及行</span></h1>
                 <p class="text-xs text-gray-400 font-medium tracking-widest mt-1">MYSTERY & HISTORY TOUR</p>
@@ -75,12 +86,12 @@
             </button>
         </header>
 
-        <!-- Main Content: flex-1 讓它自動填滿剩餘空間並負責捲動 -->
+        <!-- Main Content -->
         <main id="main-content" class="flex-1 p-4 pb-6 overflow-y-auto scrollbar-hide overscroll-contain">
             <!-- Content will be injected here by JavaScript -->
         </main>
 
-        <!-- Bottom Navigation: 修改 padding，增加 pb-6 將按鈕上推，避開圓角 -->
+        <!-- Bottom Navigation -->
         <nav id="bottom-nav" class="safe-bottom bg-white border-t border-gray-200 px-4 pt-3 pb-6 z-20 flex-none flex justify-between items-center text-xs transition-colors duration-300">
             <!-- Nav items injected by JS -->
         </nav>
@@ -136,7 +147,7 @@
                 desc: "前往巴哈利亞綠洲午餐，探索奇特的水晶山與阿加巴特山谷。傍晚在白色沙漠滑沙，體驗沙漠露營與星空下的篝火晚餐。",
                 details: "白色沙漠以其雪白的的白堊岩地形聞名，經過風沙長年侵蝕，形成了像蘑菇、小雞等各種奇特形狀。晚上在無光害的沙漠中露營，是觀賞壯麗銀河的絕佳機會。",
                 link: "https://zh.wikipedia.org/wiki/%E7%99%BD%E6%B2%99%E6%BC%A0",
-                image: "https://images.unsplash.com/photo-1662973497556-92f75da5394e?auto=format&fit=crop&q=80&w=800",
+                image: "https://i0.wp.com/ninetyroadtravel.com/wp-content/uploads/2023/09/image-52.png?resize=1024%2C768&ssl=1",
                 icon: "tent",
                 meals: "含早餐、綠洲午餐、營地晚餐"
             },
@@ -149,7 +160,7 @@
                 desc: "享用沙漠早餐後，參觀黑沙漠與體驗綠洲溫泉，享用綠洲午餐後返回開羅。",
                 details: "黑沙漠的地貌與白沙漠截然不同，遍布著黑色火山岩，呈現出如外星球般的荒涼美感。隨後前往綠洲溫泉放鬆身心，洗去沙漠的塵土。",
                 link: "https://en.wikipedia.org/wiki/Bahariya_Oasis",
-                image: "https://images.unsplash.com/photo-1539650116455-251d93d5ce3d?auto=format&fit=crop&q=80&w=800",
+                image: "https://tings.tw/wp-content/uploads/2024/02/img_4256-1.jpg",
                 icon: "bus",
                 meals: "含早餐、午餐"
             },
@@ -162,7 +173,7 @@
                 desc: "早上參觀宏偉的大埃及博物館(GEM)，下午前往埃及文明博物館(NMEC)觀看皇家木乃伊。",
                 details: "大埃及博物館 (GEM) 是世界上最大的考古博物館，收藏了完整的圖坦卡門寶藏。下午的文明博物館則展示了從史前到現代的埃及文明進程，最著名的展廳收藏了22具皇家木乃伊。",
                 link: "https://grandegyptianmuseum.org/",
-                image: "https://images.unsplash.com/photo-1566192258-d9d5929424ee?auto=format&fit=crop&q=80&w=800",
+                image: "https://media.vogue.com.tw/photos/65670f76d69455de2845d343/master/w_1920,c_limit/Grand%20Egyptian%20Museum%20Image.jpg",
                 icon: "camera",
                 meals: "部分餐食"
             },
@@ -190,7 +201,7 @@
                 desc: "車程約3.5小時前往阿布辛貝，參觀壯觀的神廟群，隨後返回阿斯旺。",
                 details: "阿布辛貝神廟是拉美西斯二世為了展示國力而建，神廟門口四座巨大的法老坐像極為震撼。更神奇的是，這座神廟曾因興建水壩而面臨淹沒，後經聯合國教科文組織整體遷移保存。",
                 link: "https://zh.wikipedia.org/wiki/%E9%98%BF%E5%B8%83%E8%BE%9B%E8%B4%9D%E7%A5%9E%E5%BA%99",
-                image: "https://images.unsplash.com/photo-1596561582239-165c37025816?auto=format&fit=crop&q=80&w=800",
+                image: "https://images.unsplash.com/photo-1633163893862-4cdc62de7d82?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                 icon: "sun",
                 meals: "部分餐食"
             },
@@ -203,7 +214,7 @@
                 desc: "搭乘摩托船前往菲萊神廟，參訪色彩繽紛的努比亞村。隨後前往盧克索準備跨年。",
                 details: "菲萊神廟供奉愛神伊西斯，被稱為「尼羅河的珍珠」，需搭船才能抵達。努比亞村則充滿鮮豔的色彩與熱情的努比亞人，這裡也是購買香料與手工藝品的好地方。",
                 link: "https://zh.wikipedia.org/wiki/%E8%8F%B2%E8%8E%B1%E7%A5%9E%E5%BA%99",
-                image: "https://images.unsplash.com/photo-1566863032545-e4d6d6b6a378?auto=format&fit=crop&q=80&w=800",
+                image: "https://images.unsplash.com/photo-1655163394526-46ce1d6761b1?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                 icon: "anchor",
                 meals: "部分餐食"
             },
@@ -216,7 +227,7 @@
                 desc: "新年第一天！可自費參加熱氣球。走訪帝王谷、門農巨像，以及壯觀的卡納克與盧克索神廟。",
                 details: "盧克索是古埃及新王國時期的首都底比斯。帝王谷埋葬了多位法老（含圖坦卡門）。卡納克神廟是世界上最大的神廟群之一，其巨大的多柱廳令人嘆為觀止。",
                 link: "https://zh.wikipedia.org/wiki/%E5%BA%95%E6%AF%94%E6%96%AF_(%E5%9F%83%E5%8F%8A)",
-                image: "https://images.unsplash.com/photo-1597839219216-a773cb247374?auto=format&fit=crop&q=80&w=800",
+                image: "https://images.unsplash.com/photo-1632944398987-494eebe663be?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                 icon: "camera",
                 meals: "部分餐食"
             },
@@ -229,7 +240,7 @@
                 desc: "前往丹達拉神廟(2hr車程)。下午搭乘 MS75 返回開羅機場。建議預訂晚上 11:00 後的國際班機返國。",
                 details: "丹達拉神廟是埃及保存最完好的神廟之一，天花板上著名的「丹達拉黃道帶」描繪了古埃及的天文知識，色彩鮮豔如新。",
                 link: "https://zh.wikipedia.org/wiki/%E4%B8%B9%E8%BE%BE%E6%8B%89%E7%A5%9E%E5%BA%99%E7%BE%A4",
-                image: "https://images.unsplash.com/photo-1628434778393-2776c11d2797?auto=format&fit=crop&q=80&w=800",
+                image: "https://images.unsplash.com/photo-1723997326348-d4953661a61a?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                 icon: "plane",
                 meals: "早餐",
                 isFlight: true,
