@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>2026 一生必去埃及行</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,9 +39,16 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 transition-colors duration-300">
+<body class="bg-gray-100 transition-colors duration-300 overflow-x-hidden">
 
-    <div id="app-container" class="min-h-screen font-sans text-gray-800 max-w-md mx-auto relative shadow-2xl overflow-hidden bg-gray-100 transition-colors duration-300">
+    <!-- 
+      修正重點：
+      1. w-full: 手機版強制佔滿寬度
+      2. shadow-none sm:shadow-2xl: 手機版移除陰影(避免超出邊框)，電腦版保留陰影
+      3. sm:rounded-2xl: 電腦版才有圓角，手機版直角貼邊
+      4. sm:my-8: 電腦版上下留白，手機版貼齊
+    -->
+    <div id="app-container" class="w-full min-h-screen sm:h-[calc(100vh-64px)] font-sans text-gray-800 max-w-md mx-auto relative shadow-none sm:shadow-2xl sm:rounded-2xl overflow-hidden bg-gray-100 transition-colors duration-300 sm:my-8 border-x-0 sm:border-x border-gray-200/50">
         
         <!-- Header -->
         <header id="header" class="bg-white px-6 pt-12 pb-4 sticky top-0 z-20 shadow-sm flex justify-between items-end transition-colors duration-300">
@@ -55,7 +62,7 @@
         </header>
 
         <!-- Main Content -->
-        <main id="main-content" class="p-4 pb-24 overflow-y-auto h-[calc(100vh-140px)] scrollbar-hide">
+        <main id="main-content" class="p-4 pb-24 overflow-y-auto h-[calc(100vh-140px)] sm:h-[calc(100%-140px)] scrollbar-hide">
             <!-- Content will be injected here by JavaScript -->
         </main>
 
