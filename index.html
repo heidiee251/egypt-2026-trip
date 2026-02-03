@@ -61,19 +61,21 @@
             padding-top: calc(env(safe-area-inset-top) + 1.5rem); 
         }
 
-        /* 關鍵修正：Bottom Nav 底部間距控制 
-           先前 pb-6 太多，現在改為動態計算：安全區域 + 0.75rem (約12px)
+        /* 🔥 底部修正重點：消除多餘空白
+           舊設定: calc(env(...) + 0.75rem) -> 導致雙重留白
+           新設定: max(0.75rem, env(...)) 
+           邏輯：如果有 Safe Area (iPhone)，就直接用 Safe Area 的高度，不再疊加額外高度。
+                 如果沒有 Safe Area (電腦/舊手機)，則維持 0.75rem 的美觀間距。
         */
         .nav-safe-padding {
-            padding-bottom: 1rem;
-            padding-bottom: calc(env(safe-area-inset-bottom) + 0.75rem);
+            padding-bottom: 0.75rem; /* Fallback */
+            padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
         }
 
         @media (min-width: 640px) {
             .header-safe-padding {
                 padding-top: 3rem; 
             }
-            /* 電腦版不需要額外的 safe area padding */
             .nav-safe-padding {
                 padding-bottom: 1rem;
             }
@@ -108,7 +110,7 @@
             <!-- Content will be injected here by JavaScript -->
         </main>
 
-        <!-- Bottom Navigation: 使用自定義 nav-safe-padding 修正空白 -->
+        <!-- Bottom Navigation -->
         <nav id="bottom-nav" class="nav-safe-padding bg-white border-t border-gray-200 px-4 pt-3 z-20 flex-none flex justify-between items-center text-xs transition-colors duration-300">
             <!-- Nav items injected by JS -->
         </nav>
