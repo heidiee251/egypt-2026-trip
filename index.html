@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 一生必去埃及行</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        fadeIn: 'fadeIn 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .scrollbar-hide {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 transition-colors duration-300">
+
+    <div id="app-container" class="min-h-screen font-sans text-gray-800 max-w-md mx-auto relative shadow-2xl overflow-hidden bg-gray-100 transition-colors duration-300">
+        
+        <!-- Header -->
+        <header id="header" class="bg-white px-6 pt-12 pb-4 sticky top-0 z-20 shadow-sm flex justify-between items-end transition-colors duration-300">
+            <div>
+                <h1 class="text-xl font-extrabold text-amber-600 tracking-tight leading-tight">2026<br/><span class="text-gray-800 text-2xl" id="header-subtitle">一生必去埃及行</span></h1>
+                <p class="text-xs text-gray-400 font-medium tracking-widest mt-1">MYSTERY & HISTORY TOUR</p>
+            </div>
+            <button onclick="toggleTheme()" class="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all" id="theme-btn">
+                <i data-lucide="moon" class="w-5 h-5"></i>
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main id="main-content" class="p-4 pb-24 overflow-y-auto h-[calc(100vh-140px)] scrollbar-hide">
+            <!-- Content will be injected here by JavaScript -->
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav id="bottom-nav" class="absolute bottom-0 w-full bg-white border-t border-gray-200 px-4 py-3 flex justify-between items-center text-xs z-20 transition-colors duration-300">
+            <!-- Nav items injected by JS -->
+        </nav>
+
+    </div>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            activeTab: 'itinerary', // default tab
+            darkMode: false,
+            expandedDay: null,
+            currency: {
+                usd: '',
+                egp: '',
+                twd: '',
+                rates: {
+                    usdToTwd: 32.5,
+                    usdToEgp: 50.5
+                },
+                loading: false
+            },
+            checkedItems: new Set() // Track checked packing list items
+        };
+
+        // --- Data ---
+        const tripDetails = {
+            dates: "2026/12/25 - 2027/01/02",
+            flight: "TK690 (抵達開羅 09:20)",
+            currentPax: 15,
+        };
+
+        const itinerary = [
+            {
+                day: 1,
+                date: "12/25 (五)",
+                title: "抵達開羅 & 舊城巡禮",
+                stay: "開羅五星級酒店",
+                highlight: "薩拉丁城堡、清真寺、哈利利市集",
+                desc: "上午11:00前抵達開羅機場。落地接機後前往薩拉丁城堡與穆哈默德阿裡清真寺，參觀懸空教堂(或洞穴教堂)，最後在哈利利市集感受埃及風情。",
+                details: "薩拉丁城堡是開羅的地標之一，建於12世紀，擁有絕佳的視野可俯瞰全開羅。其中的穆罕默德·阿里清真寺以其巨大的銀色圓頂和高聳的尖塔聞名，內部裝飾華麗，是奧斯曼建築的代表作。",
+                link: "https://zh.wikipedia.org/zh-tw/%E8%90%A8%E6%8B%89%E4%B8%81%E5%9F%8E%E5%A0%A1",
+                image: "https://images.unsplash.com/photo-1553913861-c0fddf26bc71?auto=format&fit=crop&q=80&w=800",
+                icon: "plane",
+                meals: "部分餐食"
+            },
+            {
+                day: 2,
+                date: "12/26 (六)",
+                title: "深入黑白沙漠",
+                stay: "沙漠露營 (篝火晚餐)",
+                highlight: "水晶山、白色沙漠、滑沙",
+                desc: "前往巴哈利亞綠洲午餐，探索奇特的水晶山與阿加巴特山谷。傍晚在白色沙漠滑沙，體驗沙漠露營與星空下的篝火晚餐。",
+                details: "白色沙漠以其雪白的的白堊岩地形聞名，經過風沙長年侵蝕，形成了像蘑菇、小雞等各種奇特形狀。晚上在無光害的沙漠中露營，是觀賞壯麗銀河的絕佳機會。",
+                link: "https://zh.wikipedia.org/wiki/%E7%99%BD%E6%B2%99%E6%BC%A0",
+                image: "https://images.unsplash.com/photo-1662973497556-92f75da5394e?auto=format&fit=crop&q=80&w=800",
+                icon: "tent",
+                meals: "含早餐、綠洲午餐、營地晚餐"
+            },
+            {
+                day: 3,
+                date: "12/27 (日)",
+                title: "綠洲秘境 & 返回開羅",
+                stay: "開羅五星級酒店",
+                highlight: "黑沙漠、綠洲溫泉",
+                desc: "享用沙漠早餐後，參觀黑沙漠與體驗綠洲溫泉，享用綠洲午餐後返回開羅。",
+                details: "黑沙漠的地貌與白沙漠截然不同，遍布著黑色火山岩，呈現出如外星球般的荒涼美感。隨後前往綠洲溫泉放鬆身心，洗去沙漠的塵土。",
+                link: "https://en.wikipedia.org/wiki/Bahariya_Oasis",
+                image: "https://images.unsplash.com/photo-1539650116455-251d93d5ce3d?auto=format&fit=crop&q=80&w=800",
+                icon: "bus",
+                meals: "含早餐、午餐"
+            },
+            {
+                day: 4,
+                date: "12/28 (一)",
+                title: "穿越古今博物館日",
+                stay: "開羅五星級酒店",
+                highlight: "大埃及博物館、文明博物館",
+                desc: "早上參觀宏偉的大埃及博物館(GEM)，下午前往埃及文明博物館(NMEC)觀看皇家木乃伊。",
+                details: "大埃及博物館 (GEM) 是世界上最大的考古博物館，收藏了完整的圖坦卡門寶藏。下午的文明博物館則展示了從史前到現代的埃及文明進程，最著名的展廳收藏了22具皇家木乃伊。",
+                link: "https://grandegyptianmuseum.org/",
+                image: "https://images.unsplash.com/photo-1566192258-d9d5929424ee?auto=format&fit=crop&q=80&w=800",
+                icon: "camera",
+                meals: "部分餐食"
+            },
+            {
+                day: 5,
+                date: "12/29 (二)",
+                title: "金字塔傳奇 & 飛往阿斯旺",
+                stay: "阿斯旺五星級酒店",
+                highlight: "吉薩金字塔、獅身人面像、騎駱駝",
+                desc: "探索世界奇蹟吉薩金字塔群與獅身人面像，體驗騎駱駝。晚上搭乘國內航班 MS86 飛往南部大城阿斯旺。",
+                details: "吉薩金字塔群是古代世界七大奇蹟中唯一碩果僅存的，包括胡夫、卡夫拉和孟卡拉三座金字塔。一定要體驗在金字塔背景下騎駱駝，拍出經典的人生照片。",
+                link: "https://zh.wikipedia.org/zh-tw/%E5%90%89%E8%90%A8%E9%87%91%E5%AD%97%E5%A1%94%E7%BE%A4",
+                image: "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?auto=format&fit=crop&q=80&w=800",
+                icon: "plane",
+                meals: "部分餐食",
+                isFlight: true,
+                flightInfo: "埃航 MS86 19:00 - 20:25"
+            },
+            {
+                day: 6,
+                date: "12/30 (三)",
+                title: "拉美西斯的榮耀",
+                stay: "阿斯旺五星級酒店",
+                highlight: "阿布辛貝神廟 (大廟+小廟)",
+                desc: "車程約3.5小時前往阿布辛貝，參觀壯觀的神廟群，隨後返回阿斯旺。",
+                details: "阿布辛貝神廟是拉美西斯二世為了展示國力而建，神廟門口四座巨大的法老坐像極為震撼。更神奇的是，這座神廟曾因興建水壩而面臨淹沒，後經聯合國教科文組織整體遷移保存。",
+                link: "https://zh.wikipedia.org/wiki/%E9%98%BF%E5%B8%83%E8%BE%9B%E8%B4%9D%E7%A5%9E%E5%BA%99",
+                image: "https://images.unsplash.com/photo-1596561582239-165c37025816?auto=format&fit=crop&q=80&w=800",
+                icon: "sun",
+                meals: "部分餐食"
+            },
+            {
+                day: 7,
+                date: "12/31 (四)",
+                title: "尼羅河風情 & 跨年夜",
+                stay: "盧克索五星級酒店",
+                highlight: "菲萊神廟、努比亞村、風帆船",
+                desc: "搭乘摩托船前往菲萊神廟，參訪色彩繽紛的努比亞村。隨後前往盧克索準備跨年。",
+                details: "菲萊神廟供奉愛神伊西斯，被稱為「尼羅河的珍珠」，需搭船才能抵達。努比亞村則充滿鮮豔的色彩與熱情的努比亞人，這裡也是購買香料與手工藝品的好地方。",
+                link: "https://zh.wikipedia.org/wiki/%E8%8F%B2%E8%8E%B1%E7%A5%9E%E5%BA%99",
+                image: "https://images.unsplash.com/photo-1566863032545-e4d6d6b6a378?auto=format&fit=crop&q=80&w=800",
+                icon: "anchor",
+                meals: "部分餐食"
+            },
+            {
+                day: 8,
+                date: "01/01 (五)",
+                title: "古都底比斯巡禮",
+                stay: "盧克索五星級酒店",
+                highlight: "帝王谷、卡納克神廟、盧克索神廟",
+                desc: "新年第一天！可自費參加熱氣球。走訪帝王谷、門農巨像，以及壯觀的卡納克與盧克索神廟。",
+                details: "盧克索是古埃及新王國時期的首都底比斯。帝王谷埋葬了多位法老（含圖坦卡門）。卡納克神廟是世界上最大的神廟群之一，其巨大的多柱廳令人嘆為觀止。",
+                link: "https://zh.wikipedia.org/wiki/%E5%BA%95%E6%AF%94%E6%96%AF_(%E5%9F%83%E5%8F%8A)",
+                image: "https://images.unsplash.com/photo-1597839219216-a773cb247374?auto=format&fit=crop&q=80&w=800",
+                icon: "camera",
+                meals: "部分餐食"
+            },
+            {
+                day: 9,
+                date: "01/02 (六)",
+                title: "丹達拉神廟 & 返程",
+                stay: "溫暖的家 / 或開羅機場周邊",
+                highlight: "丹達拉神廟、國內航班返開羅",
+                desc: "前往丹達拉神廟(2hr車程)。下午搭乘 MS75 返回開羅機場。建議預訂晚上 11:00 後的國際班機返國。",
+                details: "丹達拉神廟是埃及保存最完好的神廟之一，天花板上著名的「丹達拉黃道帶」描繪了古埃及的天文知識，色彩鮮豔如新。",
+                link: "https://zh.wikipedia.org/wiki/%E4%B8%B9%E8%BE%BE%E6%8B%89%E7%A5%9E%E5%BA%99%E7%BE%A4",
+                image: "https://images.unsplash.com/photo-1628434778393-2776c11d2797?auto=format&fit=crop&q=80&w=800",
+                icon: "plane",
+                meals: "早餐",
+                isFlight: true,
+                flightInfo: "埃航 MS75 15:20 - 16:30",
+                importantNote: "注意：若您是搭乘隔天 (1/3) 上午才離開開羅的航班，請務必自行預訂 1/2 當晚的住宿，建議選擇開羅機場周邊飯店以便搭機。"
+            }
+        ];
+
+        const costs = {
+            tiers: [
+                { pax: "14人", price: "2080 USD", twd: "約 6.6 萬" },
+                { pax: "16人", price: "2040 USD", twd: "約 6.5 萬" },
+                { pax: "18人", price: "1980 USD", twd: "約 6.3 萬" }
+            ],
+            included: [
+                "機場接送、海關接機",
+                "開羅五星酒店3晚、阿斯旺五星2晚、盧克索五星2晚、沙漠露營1晚",
+                "全程包車 (50人座巴士)、油費、過路費 (每天8-9小時)",
+                "景點首道門票 (含金字塔騎駱駝及小費)",
+                "前往景點接駁船費、車費",
+                "部分餐食、每日兩瓶水/人",
+                "考古級中文資深導遊 (全程同一人)",
+                "司機與導遊小費"
+            ],
+            excluded: [
+                "國際機票",
+                "埃及內陸機票",
+                "落地簽 25 USD/人",
+                "熱氣球 (40~100 USD浮動)",
+                "個人消費與額外餐飲"
+            ]
+        };
+
+        const guides = [
+            {
+                title: "天氣與穿著 (12月底-1月初)",
+                icon: "sun",
+                color: "text-orange-500",
+                content: "早晚溫差極大！開羅/盧克索白天約 20-23°C (薄長袖/洋蔥式)，晚上約 10-12°C (需厚外套)。沙漠地區夜晚可降至 0-5°C，務必攜帶保暖衣物、毛帽、圍巾。"
+            },
+            {
+                title: "電壓與插座",
+                icon: "zap",
+                color: "text-yellow-500",
+                content: "埃及電壓為 220V。插座為「雙圓孔」(Type C / F，歐規)。請務必攜帶萬用轉接頭，若電器無變壓功能(如吹風機)，需搭配變壓器使用。"
+            },
+            {
+                title: "國內航班行李限制",
+                icon: "briefcase",
+                color: "text-blue-500",
+                content: "因行程包含兩段內陸飛機 (開羅-阿斯旺 / 盧克索-開羅)，嚴格執行行李規定：託運限一件 23KG + 手提限一件 7KG。超重費極高，請控制購物慾望或預留空間。"
+            },
+            {
+                title: "風俗與禁忌",
+                icon: "info",
+                color: "text-purple-500",
+                content: "1. 小費(Baksheesh)是文化也是義務，上廁所通常需 5-10 埃鎊。\n2. 參觀清真寺女性需包頭巾，穿著不宜過度暴露。\n3. 不要隨意拍攝軍警人員或當地婦女。\n4. 飲用水請務必喝瓶裝水。"
+            }
+        ];
+
+        const packingList = [
+            { category: "證件類", items: ["護照 (效期6個月以上)", "機票證明/電子檔", "美金現金 (大面額換匯用，小面額付小費)", "信用卡 (大飯店/商場用)"] },
+            { category: "衣物類", items: ["輕羽絨/厚外套 (沙漠/早晚用)", "薄長袖、T恤", "好走的鞋 (神廟多沙地)", "遮陽帽、太陽眼鏡", "圍巾 (防風沙/進清真寺)", "泳衣 (飯店泳池/溫泉)"] },
+            { category: "生活用品", items: ["牙刷牙膏 (環保不提供)", "拖鞋", "個人保養品/防曬乳 (極乾燥)", "腸胃藥/感冒藥/暈車藥", "濕紙巾/乾洗手", "萬用轉接頭 (雙圓孔)"] },
+            { category: "電子類", items: ["行動電源 (隨身攜帶)", "充電線", "相機/記憶卡"] }
+        ];
+
+        // --- Functions ---
+
+        // Theme Toggle
+        function toggleTheme() {
+            state.darkMode = !state.darkMode;
+            const container = document.getElementById('app-container');
+            const header = document.getElementById('header');
+            const bottomNav = document.getElementById('bottom-nav');
+            const themeBtn = document.getElementById('theme-btn');
+            const subtitle = document.getElementById('header-subtitle');
+            
+            if (state.darkMode) {
+                document.documentElement.classList.add('dark');
+                container.classList.replace('bg-gray-100', 'bg-slate-900');
+                container.classList.replace('text-gray-800', 'text-gray-100');
+                header.classList.replace('bg-white', 'bg-slate-800');
+                bottomNav.classList.replace('bg-white', 'bg-slate-800');
+                bottomNav.classList.replace('border-gray-200', 'border-slate-700');
+                
+                // Header specifics
+                themeBtn.classList.replace('bg-gray-100', 'bg-slate-700');
+                themeBtn.classList.replace('text-gray-600', 'text-yellow-400');
+                themeBtn.classList.replace('hover:bg-gray-200', 'hover:bg-slate-600');
+                themeBtn.innerHTML = '<i data-lucide="sun" class="w-5 h-5"></i>';
+                subtitle.classList.replace('text-gray-800', 'text-white');
+            } else {
+                document.documentElement.classList.remove('dark');
+                container.classList.replace('bg-slate-900', 'bg-gray-100');
+                container.classList.replace('text-gray-100', 'text-gray-800');
+                header.classList.replace('bg-slate-800', 'bg-white');
+                bottomNav.classList.replace('bg-slate-800', 'bg-white');
+                bottomNav.classList.replace('border-slate-700', 'border-gray-200');
+
+                // Header specifics
+                themeBtn.classList.replace('bg-slate-700', 'bg-gray-100');
+                themeBtn.classList.replace('text-yellow-400', 'text-gray-600');
+                themeBtn.classList.replace('hover:bg-slate-600', 'hover:bg-gray-200');
+                themeBtn.innerHTML = '<i data-lucide="moon" class="w-5 h-5"></i>';
+                subtitle.classList.replace('text-white', 'text-gray-800');
+            }
+            render(); // Re-render content to apply theme classes to inner elements
+        }
+
+        // Tab Switching
+        function switchTab(tab) {
+            state.activeTab = tab;
+            render();
+        }
+
+        // Itinerary Toggle
+        function toggleDay(day) {
+            state.expandedDay = state.expandedDay === day ? null : day;
+            render();
+        }
+
+        // Packing List Toggle
+        function toggleItem(item) {
+            if (state.checkedItems.has(item)) {
+                state.checkedItems.delete(item);
+            } else {
+                state.checkedItems.add(item);
+            }
+            render();
+        }
+
+        // Currency Calculation
+        function fetchRate() {
+            state.currency.loading = true;
+            render();
+            
+            fetch('https://api.exchangerate-api.com/v4/latest/EGP')
+                .then(res => res.json())
+                .then(data => {
+                    const egpToTwd = data.rates.TWD;
+                    const egpToUsd = data.rates.USD;
+                    
+                    if (egpToUsd && egpToTwd) {
+                        state.currency.rates.usdToEgp = parseFloat((1 / egpToUsd).toFixed(2));
+                        state.currency.rates.usdToTwd = parseFloat(((1 / egpToUsd) * egpToTwd).toFixed(2));
+                    }
+                })
+                .catch(err => console.log("API Error, using default rates"))
+                .finally(() => {
+                    state.currency.loading = false;
+                    render();
+                });
+        }
+
+        function handleCurrencyChange(type, value) {
+            state.currency[type] = value;
+            if (value === '') {
+                state.currency.usd = '';
+                state.currency.egp = '';
+                state.currency.twd = '';
+            } else {
+                const num = parseFloat(value);
+                if (!isNaN(num)) {
+                    if (type === 'usd') {
+                        state.currency.egp = (num * state.currency.rates.usdToEgp).toFixed(1);
+                        state.currency.twd = (num * state.currency.rates.usdToTwd).toFixed(1);
+                    } else if (type === 'egp') {
+                        const usdVal = num / state.currency.rates.usdToEgp;
+                        state.currency.usd = usdVal.toFixed(2);
+                        state.currency.twd = (usdVal * state.currency.rates.usdToTwd).toFixed(1);
+                    } else if (type === 'twd') {
+                        const usdVal = num / state.currency.rates.usdToTwd;
+                        state.currency.usd = usdVal.toFixed(2);
+                        state.currency.egp = (usdVal * state.currency.rates.usdToEgp).toFixed(1);
+                    }
+                }
+            }
+            // Update input values directly to prevent re-render losing focus/cursor position
+            document.getElementById('input-usd').value = state.currency.usd;
+            document.getElementById('input-egp').value = state.currency.egp;
+            document.getElementById('input-twd').value = state.currency.twd;
+        }
+
+        function updateRate(type, value) {
+            const val = parseFloat(value);
+            state.currency.rates[type] = val;
+            // Trigger recalculation based on USD if present
+            if (state.currency.usd && !isNaN(val)) {
+                handleCurrencyChange('usd', state.currency.usd);
+            }
+        }
+
+
+        // --- Render Helpers (Templates) ---
+
+        function renderHome() {
+            const gradient = state.darkMode 
+                ? 'bg-gradient-to-br from-slate-800 to-slate-900' 
+                : 'bg-gradient-to-r from-amber-500 to-orange-600';
+            
+            const cardBg = state.darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-l-4 border-amber-500';
+            const cardBg2 = state.darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-l-4 border-blue-500';
+            const alertBg = state.darkMode ? 'bg-orange-900/20 border-orange-800/30 text-orange-200/80' : 'bg-orange-50 border-orange-100 text-orange-700';
+
+            return `
+                <div class="space-y-6 animate-fadeIn">
+                    <div class="rounded-2xl p-6 text-white shadow-lg relative overflow-hidden transition-all duration-500 ${gradient}">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                        <div class="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
+
+                        <h2 class="text-3xl font-bold mb-2 tracking-tight relative z-10">2026 一生必去埃及行</h2>
+                        <div class="flex flex-col gap-1 relative z-10">
+                            <p class="opacity-90 flex items-center gap-2 text-sm"><i data-lucide="calendar" class="w-4 h-4"></i> 2026/12/25 - 2027/1/2</p>
+                            <p class="opacity-90 flex items-center gap-2 text-sm"><i data-lucide="users" class="w-4 h-4"></i> 目前團員: ${tripDetails.currentPax} 人</p>
+                        </div>
+                        
+                        <div class="mt-6 bg-white/20 rounded-xl p-4 backdrop-blur-md border border-white/10 relative z-10">
+                            <p class="text-xs font-bold uppercase tracking-widest opacity-80 mb-2 text-amber-100">Flight Info</p>
+                            <div class="flex items-center gap-4">
+                                <div class="p-2 bg-white/20 rounded-full">
+                                    <i data-lucide="plane" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-xl tracking-wide">TK690</p>
+                                    <p class="text-sm opacity-90">12/25 09:20 抵達開羅</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 rounded-xl shadow-sm border-l-4 border-amber-500 ${state.darkMode ? 'bg-slate-800 text-gray-100' : 'bg-white'}">
+                            <div class="text-amber-500 font-bold text-2xl mb-1">9 天</div>
+                            <div class="text-sm font-medium opacity-70">精彩行程</div>
+                        </div>
+                        <div class="p-4 rounded-xl shadow-sm border-l-4 border-blue-500 ${state.darkMode ? 'bg-slate-800 text-gray-100' : 'bg-white'}">
+                            <div class="text-blue-500 font-bold text-2xl mb-1">2 段</div>
+                            <div class="text-sm font-medium opacity-70">國內飛機</div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl p-5 border ${alertBg}">
+                        <h3 class="font-bold flex items-center gap-2 mb-3 ${state.darkMode ? 'text-orange-300' : 'text-orange-800'}">
+                            <i data-lucide="alert-triangle" class="w-5 h-5"></i> 重要提醒
+                        </h3>
+                        <ul class="list-disc list-inside text-sm space-y-2 leading-relaxed opacity-90">
+                            <li>國內航班行李限制：<span class="font-bold">託運 23KG + 手提 7KG</span>。</li>
+                            <li>請於出發前確認落地簽費用 (25 USD)。</li>
+                            <li>沙漠早晚溫差極大 (0-25°C)，請備妥保暖衣物。</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderItinerary() {
+            const isDark = state.darkMode;
+            
+            let html = `
+                <div class="space-y-4">
+                    <div class="text-xs text-center text-gray-400 mb-2 flex items-center justify-center gap-1">
+                        <i data-lucide="info" class="w-3 h-3"></i> 點擊卡片可查看景點詳情
+                    </div>
+            `;
+
+            itinerary.forEach((item, idx) => {
+                const isExpanded = state.expandedDay === item.day;
+                const containerClass = isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100';
+                const containerHover = isDark ? 'hover:border-amber-500' : 'hover:border-amber-200';
+                const activeBorder = isExpanded ? 'border-amber-400 ring-1 ring-amber-400 shadow-md' : `${containerClass} ${containerHover}`;
+                
+                const headerBg = isExpanded 
+                    ? (isDark ? 'bg-amber-900/20 border-amber-800/30' : 'bg-amber-50 border-amber-100')
+                    : (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-50');
+
+                const badgeBg = isExpanded 
+                    ? (isDark ? 'bg-amber-800 text-amber-100' : 'bg-amber-100 text-amber-700')
+                    : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-gray-100 text-gray-500');
+
+                html += `
+                    <div onclick="toggleDay(${item.day})" class="rounded-xl shadow-sm overflow-hidden border transition-all duration-300 cursor-pointer relative ${activeBorder}">
+                        ${item.isFlight && !isExpanded ? `<div class="absolute top-0 right-0 bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-bl-lg font-bold z-10">✈️ 搭機日</div>` : ''}
+                        
+                        <div class="p-4 flex justify-between items-center border-b transition-colors ${headerBg}">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 rounded-lg transition-colors ${badgeBg}">
+                                    <span class="font-bold font-mono text-sm">Day ${item.day}</span>
+                                </div>
+                                <span class="text-xs font-medium text-gray-400">${item.date}</span>
+                            </div>
+                            <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 text-gray-400"></i>
+                        </div>
+
+                        <div class="p-0">
+                            ${isExpanded ? `
+                                <div class="w-full h-48 overflow-hidden relative group bg-gray-200 ${isDark ? 'bg-slate-700' : ''}">
+                                    <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="hidden absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-400 flex-col">
+                                        <i data-lucide="image-off" class="w-6 h-6 mb-1"></i>
+                                        <span class="text-xs">Image unavailable</span>
+                                    </div>
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                                        <p class="text-white text-xs font-medium bg-black/30 backdrop-blur-sm px-2 py-1 rounded border border-white/20">
+                                            ${item.highlight.split('、')[0]}
+                                        </p>
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <div class="p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-bold text-lg transition-colors ${isExpanded ? (isDark ? 'text-amber-400' : 'text-amber-700') : (isDark ? 'text-gray-100' : 'text-gray-800')}">
+                                        ${item.title}
+                                    </h3>
+                                    ${!isExpanded ? `<div class="p-1.5 rounded-full ${isDark ? 'bg-slate-700 text-gray-400' : 'bg-gray-50 text-gray-400'}"><i data-lucide="${item.icon}" class="w-4 h-4"></i></div>` : ''}
+                                </div>
+
+                                ${item.isFlight ? `
+                                    <div class="mb-3 p-2 rounded-lg flex items-center gap-3 text-sm ${isDark ? 'bg-blue-900/20 border border-blue-800 text-blue-300' : 'bg-blue-50 border border-blue-100 text-blue-800'}">
+                                        <div class="p-1.5 rounded-full ${isDark ? 'bg-blue-800' : 'bg-blue-200'}">
+                                            <i data-lucide="plane" class="w-4 h-4 ${isDark ? 'text-blue-100' : 'text-blue-700'}"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-xs opacity-70">國內航班</p>
+                                            <p class="font-bold">${item.flightInfo}</p>
+                                        </div>
+                                    </div>
+                                ` : ''}
+
+                                <p class="text-sm font-medium mb-2 ${isDark ? 'text-amber-500' : 'text-amber-600'}">${item.highlight}</p>
+                                <p class="text-sm leading-relaxed mb-3 ${isDark ? 'text-gray-300' : 'text-gray-600'}">${item.desc}</p>
+
+                                ${isExpanded ? `
+                                    <div class="mt-4 pt-4 border-t animate-fadeIn ${isDark ? 'border-slate-700' : 'border-gray-100'}">
+                                        ${item.importantNote ? `
+                                            <div class="mb-4 p-3 border-l-4 rounded-r text-sm flex gap-2 ${isDark ? 'bg-red-900/20 border-red-500 text-red-300' : 'bg-red-50 border-red-500 text-red-700'}">
+                                                <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                                                <span>${item.importantNote}</span>
+                                            </div>
+                                        ` : ''}
+
+                                        <h4 class="text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-slate-500' : 'text-gray-400'}">關於此地</h4>
+                                        <p class="text-sm italic leading-relaxed mb-4 ${isDark ? 'text-slate-400' : 'text-gray-500'}">${item.details}</p>
+                                        
+                                        <a href="${item.link}" target="_blank" onclick="event.stopPropagation()" class="inline-flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg transition-colors ${isDark ? 'text-blue-400 hover:text-blue-300 bg-blue-900/30' : 'text-blue-500 hover:text-blue-600 bg-blue-50'}">
+                                            <i data-lucide="external-link" class="w-3 h-3"></i> 查看詳細介紹
+                                        </a>
+
+                                        <div class="mt-4 grid grid-cols-2 gap-2 text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}">
+                                            <div class="flex items-center gap-2 p-2 rounded ${isDark ? 'bg-slate-700/50' : 'bg-gray-50'}">
+                                                <i data-lucide="moon" class="w-3 h-3"></i> 住: ${item.stay}
+                                            </div>
+                                            <div class="flex items-center gap-2 p-2 rounded ${isDark ? 'bg-slate-700/50' : 'bg-gray-50'}">
+                                                <i data-lucide="coffee" class="w-3 h-3"></i> 食: ${item.meals}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function renderCosts() {
+            const isDark = state.darkMode;
+            const cardClass = isDark ? 'bg-slate-800' : 'bg-white';
+            const textClass = isDark ? 'text-gray-100' : 'text-gray-800';
+            const subTextClass = isDark ? 'text-gray-300' : 'text-gray-600';
+
+            let html = `
+                <div class="space-y-6">
+                    <div class="rounded-xl shadow-sm p-5 border-t-4 border-green-500 ${cardClass}">
+                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2 ${textClass}">
+                            <i data-lucide="credit-card" class="w-5 h-5 text-green-600"></i> 團費報價
+                        </h3>
+                        <div class="space-y-3">
+            `;
+            
+            costs.tiers.forEach(tier => {
+                const isActive = tier.pax.includes(tripDetails.currentPax.toString());
+                const bg = isActive 
+                    ? (isDark ? 'bg-green-900/20 border-green-500 ring-1 ring-green-500' : 'bg-green-50 border-green-500 ring-1 ring-green-500')
+                    : (isDark ? 'bg-slate-700/50 border-slate-700' : 'bg-gray-50 border-gray-100');
+                
+                html += `
+                    <div class="flex justify-between items-center p-3 rounded-lg border transition-colors ${bg}">
+                        <span class="font-bold ${textClass}">${tier.pax}</span>
+                        <div class="text-right">
+                            <div class="font-bold ${isDark ? 'text-green-400' : 'text-green-700'}">${tier.price}</div>
+                            <div class="text-xs text-gray-400">${tier.twd}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                        </div>
+                        <p class="text-xs text-gray-400 mt-3 text-center">* 目前團員 15 人，適用 14 人報價級距。</p>
+                    </div>
+
+                    <div class="rounded-xl shadow-sm p-5 ${cardClass}">
+                        <h3 class="font-bold mb-3 ${textClass}">費用包含</h3>
+                        <ul class="space-y-2">
+            `;
+            costs.included.forEach(item => {
+                html += `
+                    <li class="flex items-start gap-2 text-sm ${subTextClass}">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mt-0.5 shrink-0"></i>
+                        <span>${item}</span>
+                    </li>
+                `;
+            });
+            html += `</ul></div>`;
+
+            html += `
+                    <div class="rounded-xl shadow-sm p-5 ${cardClass}">
+                        <h3 class="font-bold mb-3 ${textClass}">費用不含</h3>
+                        <ul class="space-y-2">
+            `;
+             costs.excluded.forEach(item => {
+                html += `
+                    <li class="flex items-start gap-2 text-sm ${subTextClass}">
+                         <div class="w-4 h-4 rounded-full border border-red-400 flex items-center justify-center mt-0.5 flex-shrink-0">
+                            <div class="w-2 h-0.5 bg-red-400"></div>
+                        </div>
+                        <span>${item}</span>
+                    </li>
+                `;
+            });
+            html += `</ul></div></div>`;
+
+            return html;
+        }
+
+        function renderCurrency() {
+            const isDark = state.darkMode;
+            const cardClass = isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100';
+            const inputBg = isDark ? 'bg-slate-700/50' : 'bg-gray-50';
+            const textClass = isDark ? 'text-gray-100' : 'text-gray-800';
+
+            return `
+                <div class="space-y-6">
+                    <div class="rounded-xl shadow-sm p-6 border ${cardClass}">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-bold flex items-center gap-2 ${textClass}">
+                                <i data-lucide="calculator" class="w-5 h-5 text-amber-500"></i> 匯率換算
+                            </h3>
+                            <button onclick="fetchRate()" class="p-2 rounded-full transition-colors ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'}">
+                                <i data-lucide="refresh-cw" class="w-4 h-4 ${state.currency.loading ? 'animate-spin' : ''} ${isDark ? 'text-gray-300' : 'text-gray-600'}"></i>
+                            </button>
+                        </div>
+
+                        <div class="space-y-3">
+                             <!-- USD -->
+                            <div class="p-4 rounded-xl border border-transparent focus-within:border-green-400 transition-colors ${inputBg}">
+                                <label class="text-xs font-bold uppercase tracking-wide block mb-1 ${isDark ? 'text-slate-400' : 'text-gray-400'}">美金 (USD)</label>
+                                <div class="flex items-center">
+                                    <span class="text-xl font-bold text-green-600 mr-2">$</span>
+                                    <input type="number" id="input-usd" value="${state.currency.usd}" oninput="handleCurrencyChange('usd', this.value)" placeholder="0" class="w-full bg-transparent text-2xl font-bold outline-none placeholder-gray-300 ${isDark ? 'text-white' : 'text-gray-800'}">
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-center -my-2 relative z-10">
+                                <div class="p-1 rounded-full border shadow-sm ${isDark ? 'bg-slate-600 border-slate-500' : 'bg-white border-gray-100'}">
+                                    <i data-lucide="arrow-down" class="w-3 h-3 text-gray-400"></i>
+                                </div>
+                            </div>
+
+                            <!-- EGP -->
+                            <div class="p-4 rounded-xl border border-transparent focus-within:border-amber-400 transition-colors ${inputBg}">
+                                <label class="text-xs font-bold uppercase tracking-wide block mb-1 ${isDark ? 'text-slate-400' : 'text-gray-400'}">埃及鎊 (EGP)</label>
+                                <div class="flex items-center">
+                                    <span class="text-xl font-bold text-amber-600 mr-2">E£</span>
+                                    <input type="number" id="input-egp" value="${state.currency.egp}" oninput="handleCurrencyChange('egp', this.value)" placeholder="0" class="w-full bg-transparent text-2xl font-bold outline-none placeholder-gray-300 ${isDark ? 'text-white' : 'text-gray-800'}">
+                                </div>
+                            </div>
+
+                             <div class="flex justify-center -my-2 relative z-10">
+                                <div class="p-1 rounded-full border shadow-sm ${isDark ? 'bg-slate-600 border-slate-500' : 'bg-white border-gray-100'}">
+                                    <i data-lucide="arrow-down" class="w-3 h-3 text-gray-400"></i>
+                                </div>
+                            </div>
+
+                            <!-- TWD -->
+                            <div class="p-4 rounded-xl border border-transparent focus-within:border-blue-400 transition-colors ${inputBg}">
+                                <label class="text-xs font-bold uppercase tracking-wide block mb-1 ${isDark ? 'text-slate-400' : 'text-gray-400'}">新台幣 (TWD)</label>
+                                <div class="flex items-center">
+                                    <span class="text-xl font-bold text-blue-600 mr-2">NT$</span>
+                                    <input type="number" id="input-twd" value="${state.currency.twd}" oninput="handleCurrencyChange('twd', this.value)" placeholder="0" class="w-full bg-transparent text-2xl font-bold outline-none placeholder-gray-300 ${isDark ? 'text-white' : 'text-gray-800'}">
+                                </div>
+                            </div>
+                        </div>
+
+                         <div class="mt-6 pt-4 border-t space-y-3 ${isDark ? 'border-slate-700' : 'border-gray-100'}">
+                            <div class="flex justify-between items-center text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}">
+                                <span class="font-bold">匯率設定 (可手動修改)</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-2 rounded-lg ${isDark ? 'bg-slate-900/50' : 'bg-gray-50'}">
+                                <span class="text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}">1 美金 (USD) ≈ </span>
+                                <div class="flex items-center gap-1">
+                                    <input type="number" value="${state.currency.rates.usdToEgp}" step="0.1" onchange="updateRate('usdToEgp', this.value)" class="rounded px-2 py-1 w-20 text-center font-bold outline-none ${isDark ? 'bg-slate-800 border-slate-600 text-amber-500' : 'bg-white border border-gray-200 text-amber-600'}">
+                                    <span class="text-xs font-bold w-8 ${isDark ? 'text-slate-400' : 'text-gray-500'}">EGP</span>
+                                </div>
+                            </div>
+                             <div class="flex items-center justify-between p-2 rounded-lg ${isDark ? 'bg-slate-900/50' : 'bg-gray-50'}">
+                                <span class="text-xs ${isDark ? 'text-slate-400' : 'text-gray-500'}">1 美金 (USD) ≈ </span>
+                                <div class="flex items-center gap-1">
+                                    <input type="number" value="${state.currency.rates.usdToTwd}" step="0.1" onchange="updateRate('usdToTwd', this.value)" class="rounded px-2 py-1 w-20 text-center font-bold outline-none ${isDark ? 'bg-slate-800 border-slate-600 text-blue-500' : 'bg-white border border-gray-200 text-blue-600'}">
+                                    <span class="text-xs font-bold w-8 ${isDark ? 'text-slate-400' : 'text-gray-500'}">TWD</span>
+                                </div>
+                            </div>
+                             <div class="text-center mt-2">
+                                <p class="text-[10px] text-gray-400">
+                                * 推算匯率: 1 埃鎊 (EGP) ≈ <span class="font-bold ${isDark ? 'text-gray-300' : 'text-gray-500'}">${(state.currency.rates.usdToTwd / state.currency.rates.usdToEgp).toFixed(3)}</span> 台幣
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGuide() {
+            const isDark = state.darkMode;
+            let html = '<div class="space-y-6 pb-20">';
+            
+            guides.forEach(guide => {
+                html += `
+                    <div class="rounded-xl shadow-sm p-5 border-l-4 transition-all ${isDark ? 'bg-slate-800 border-slate-600 hover:border-amber-500' : 'bg-white border-gray-200 hover:border-amber-400'}">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 rounded-full ${isDark ? 'bg-slate-700' : 'bg-gray-50'}">
+                                <i data-lucide="${guide.icon}" class="w-5 h-5 ${guide.color}"></i>
+                            </div>
+                            <h3 class="font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}">${guide.title}</h3>
+                        </div>
+                        <p class="text-sm whitespace-pre-line leading-relaxed pl-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}">${guide.content}</p>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="rounded-xl shadow-sm p-5 ${isDark ? 'bg-slate-800' : 'bg-white'}">
+                    <h3 class="font-bold mb-4 flex items-center gap-2 ${isDark ? 'text-gray-100' : 'text-gray-800'}">
+                        <i data-lucide="shopping-bag" class="w-5 h-5 ${isDark ? 'text-amber-500' : 'text-amber-600'}"></i> 行李清單檢查表
+                    </h3>
+            `;
+            
+            packingList.forEach((cat, idx) => {
+                html += `
+                    <div class="mb-4 last:mb-0">
+                        <h4 class="text-xs font-bold mb-2 uppercase tracking-wide ${isDark ? 'text-slate-400' : 'text-gray-500'}">${cat.category}</h4>
+                `;
+                cat.items.forEach(item => {
+                    const checked = state.checkedItems.has(item);
+                    const bgClass = checked 
+                        ? (isDark ? 'bg-green-900/20 border-green-800' : 'bg-green-50/50 border-green-200')
+                        : (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100 hover:border-amber-200');
+                    const textClass = checked
+                        ? (isDark ? 'text-gray-500 line-through' : 'text-gray-400 line-through')
+                        : (isDark ? 'text-gray-200' : 'text-gray-700');
+                    const iconBg = checked ? 'bg-green-500 border-green-500' : (isDark ? 'border-slate-500' : 'border-gray-300');
+
+                    html += `
+                        <div onclick="toggleItem('${item}')" class="flex items-center p-3 mb-2 rounded-lg cursor-pointer border transition-all duration-200 ${bgClass}">
+                            <div class="w-5 h-5 rounded-full border flex items-center justify-center mr-3 transition-colors ${iconBg}">
+                                ${checked ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
+                            </div>
+                            <span class="transition-colors ${textClass}">${item}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            });
+
+            html += `</div></div>`;
+            return html;
+        }
+
+        // --- Main Render Function ---
+        function render() {
+            const mainContent = document.getElementById('main-content');
+            const bottomNav = document.getElementById('bottom-nav');
+            const isDark = state.darkMode;
+
+            // Render Nav
+            const navItems = [
+                { id: 'home', icon: 'info', label: '概覽' },
+                { id: 'itinerary', icon: 'map', label: '行程' },
+                { id: 'currency', icon: 'calculator', label: '匯率' },
+                { id: 'costs', icon: 'credit-card', label: '費用' },
+                { id: 'guide', icon: 'briefcase', label: '攻略' }
+            ];
+
+            bottomNav.innerHTML = navItems.map(item => {
+                const isActive = state.activeTab === item.id;
+                const color = isActive 
+                    ? (isDark ? 'text-amber-400 font-bold' : 'text-amber-600 font-bold')
+                    : (isDark ? 'text-slate-500' : 'text-gray-400');
+                return `
+                    <button onclick="switchTab('${item.id}')" class="flex flex-col items-center gap-1 transition-colors ${color}">
+                        <i data-lucide="${item.icon}" class="w-5 h-5"></i>
+                        ${item.label}
+                    </button>
+                `;
+            }).join('');
+
+
+            // Render Content
+            if (state.activeTab === 'home') mainContent.innerHTML = renderHome();
+            else if (state.activeTab === 'itinerary') mainContent.innerHTML = renderItinerary();
+            else if (state.activeTab === 'costs') mainContent.innerHTML = renderCosts();
+            else if (state.activeTab === 'currency') mainContent.innerHTML = renderCurrency();
+            else if (state.activeTab === 'guide') mainContent.innerHTML = renderGuide();
+
+            // Initialize Icons
+            lucide.createIcons();
+            
+            // Re-focus currency input if needed (simple hack to keep focus after render)
+            // Note: In a real app we'd diff the DOM, here we simple re-render.
+            // The inputs have oninput handler which updates values directly, so we don't strictly need to focus-manage for basic typing
+            // But if we wanted to be perfect we'd need to track focus.
+        }
+
+        // --- Init ---
+        // Fetch rates on load
+        fetchRate();
+        render();
+
+    </script>
+</body>
+</html>
